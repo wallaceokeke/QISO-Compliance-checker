@@ -1,0 +1,166 @@
+[
+  {
+    "id": "A.5.1",
+    "description": "Policies for information security"
+  },
+  {
+    "id": "A.5.2",
+    "description": "Review of the policies for information security"
+  },
+  {
+    "id": "A.6.1",
+    "description": "Information security roles and responsibilities"
+  },
+  {
+    "id": "A.6.2",
+    "description": "Segregation of duties"
+  },
+  {
+    "id": "A.6.3",
+    "description": "Contact with authorities"
+  },
+  {
+    "id": "A.6.4",
+    "description": "Contact with special interest groups"
+  },
+  {
+    "id": "A.6.5",
+    "description": "Information security in project management"
+  },
+  {
+    "id": "A.7.1",
+    "description": "Screening"
+  },
+  {
+    "id": "A.7.2",
+    "description": "Terms and conditions of employment"
+  },
+  {
+    "id": "A.7.3",
+    "description": "Disciplinary process"
+  },
+  {
+    "id": "A.7.4",
+    "description": "Responsibilities after termination or change of employment"
+  },
+  {
+    "id": "A.8.1",
+    "description": "Inventory of assets"
+  },
+  {
+    "id": "A.8.2",
+    "description": "Ownership of assets"
+  },
+  {
+    "id": "A.8.3",
+    "description": "Acceptable use of assets"
+  },
+  {
+    "id": "A.8.4",
+    "description": "Return of assets"
+  },
+  {
+    "id": "A.9.1",
+    "description": "Access control policy"
+  },
+  {
+    "id": "A.9.2",
+    "description": "User access management"
+  },
+  {
+    "id": "A.9.3",
+    "description": "User responsibilities"
+  },
+  {
+    "id": "A.9.4",
+    "description": "System and application access control"
+  },
+  {
+    "id": "A.10.1",
+    "description": "Cryptographic controls"
+  },
+  {
+    "id": "A.11.1",
+    "description": "Physical and environmental security"
+  },
+  {
+    "id": "A.11.2",
+    "description": "Equipment security"
+  },
+  {
+    "id": "A.12.1",
+    "description": "Operational procedures and responsibilities"
+  },
+  {
+    "id": "A.12.2",
+    "description": "Protection from malware"
+  },
+  {
+    "id": "A.12.3",
+    "description": "Backup"
+  },
+  {
+    "id": "A.12.4",
+    "description": "Logging and monitoring"
+  },
+  {
+    "id": "A.12.5",
+    "description": "Control of operational software"
+  },
+  {
+    "id": "A.12.6",
+    "description": "Technical vulnerability management"
+  },
+  {
+    "id": "A.12.7",
+    "description": "Information systems audit considerations"
+  },
+  {
+    "id": "A.13.1",
+    "description": "Network security management"
+  },
+  {
+    "id": "A.13.2",
+    "description": "Information transfer"
+  },
+  {
+    "id": "A.14.1",
+    "description": "Security requirements of information systems"
+  },
+  {
+    "id": "A.14.2",
+    "description": "Security in development and support processes"
+  },
+  {
+    "id": "A.14.3",
+    "description": "Test data"
+  },
+  {
+    "id": "A.15.1",
+    "description": "Information security in supplier relationships"
+  },
+  {
+    "id": "A.15.2",
+    "description": "Supplier service delivery management"
+  },
+  {
+    "id": "A.16.1",
+    "description": "Management of information security incidents and improvements"
+  },
+  {
+    "id": "A.17.1",
+    "description": "Information security continuity"
+  },
+  {
+    "id": "A.17.2",
+    "description": "Redundancies"
+  },
+  {
+    "id": "A.18.1",
+    "description": "Compliance with legal and contractual requirements"
+  },
+  {
+    "id": "A.18.2",
+    "description": "Information security reviews"
+  }
+]

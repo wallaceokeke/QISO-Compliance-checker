@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="QISO Sentinel | Admin Dashboard & Reports"/>
+  <meta name="author" content="Wallace Brown - LeadDevCorps"/>
+  <title>QISO Sentinel Admin | Dashboard & PDF Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5464/5464120.png" />
+</head>
+<body class="bg-gray-950 text-white min-h-screen px-4 py-6">
+
+  <header class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-blue-500 mb-1">📊 QISO Sentinel Admin</h1>
+    <p class="text-gray-400">Your compliance HQ – now with pdf export & timeline analytics</p>
+    <button id="downloadPdf" class="mt-4 bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded inline-flex items-center">
+      🖨️ Download PDF Report
+    </button>
+  </header>
+
+  <!-- Upload Summary -->
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold text-green-400 mb-2">📂 Upload Summary</h2>
+    <div class="flex flex-wrap gap-4">
+      <div class="bg-gray-800 p-4 rounded-lg flex-1 text-center">
+        <p class="text-xs uppercase text-gray-400">Total Docs</p>
+        <p id="totalDocs" class="text-2xl font-bold">0</p>
+      </div>
+      <div class="bg-green-700 p-4 rounded-lg flex-1 text-center">
+        <p class="text-xs uppercase text-gray-300">Approved</p>
+        <p id="approvedDocs" class="text-2xl font-bold">0</p>
+      </div>
+      <div class="bg-red-700 p-4 rounded-lg flex-1 text-center">
+        <p class="text-xs uppercase text-gray-300">Failed</p>
+        <p id="failedDocs" class="text-2xl font-bold">0</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Charts Section -->
+  <section class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-gray-800 p-4 rounded-lg shadow">
+      <h3 class="text-gray-300 mb-2">Daily Activity</h3>
+      <canvas id="dailyChart" height="140"></canvas>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg shadow">
+      <h3 class="text-gray-300 mb-2">Approved vs Failed</h3>
+      <canvas id="statusChart" height="140"></canvas>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg shadow">
+      <h3 class="text-gray-300 mb-2">Top Failed Controls</h3>
+      <canvas id="failRadar" height="140"></canvas>
+    </div>
+  </section>
+
+  <!-- User Upload History with date and session filter -->
+  <section class="mb-8">
+    <div class="flex flex-col md:flex-row md:justify-between items-center mb-2 gap-2">
+      <h2 class="text-xl font-semibold text-blue-400">🧑‍💻 User Upload History</h2>
+      <div class="flex gap-2">
+        <label for="sessionFilter" class="sr-only">Filter by Session</label>
+        <select id="sessionFilter" class="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-white" title="Filter by Session">
+          <option value="all">All Sessions</option>
+        </select>
+        <input type="date" id="dateFilter" class="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-white" title="Filter by date" placeholder="Select date">
+      </div>
+    </div>
+    <div class="overflow-auto rounded-lg shadow border border-gray-700">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-800 text-blue-300">
+          <tr>
+            <th class="p-2 text-left">Session</th>
+            <th class="p-2 text-left">File</th>
+            <th class="p-2 text-left">Score%</th>
+            <th class="p-2 text-left">Date</th>
+          </tr>
+        </thead>
+        <tbody id="uploadTable" class="bg-gray-950"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Agreement Logs with date filter -->
+  <section class="mb-8">
+    <div class="flex flex-col md:flex-row md:justify-between items-center mb-2 gap-2">
+      <h2 class="text-xl font-semibold text-yellow-300">📝 Agreement Logs</h2>
+      <div class="flex gap-2">
+        <label for="dateAgreeFilter" class="sr-only">Filter by Agreement Date</label>
+        <input type="date" id="dateAgreeFilter" class="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-white" placeholder="Filter by date" title="Filter by Agreement Date">
+        <input type="text" id="searchInput" placeholder="🔍 Search IP / Doc ID" class="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-white">
+      </div>
+    </div>
+    <div class="overflow-auto rounded-lg shadow border border-gray-700">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-800 text-blue-300">
+          <tr>
+            <th class="p-2">Timestamp</th><th class="p-2">IP</th><th class="p-2">Doc ID</th><th class="p-2">Session</th>
+          </tr>
+        </thead>
+        <tbody id="agreementTable" class="bg-gray-900"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="mt-8 text-center text-xs text-gray-500">
+    Powered by LeadDevCorps — Wallace Brown © 2025
+  </footer>
+
+<script>
+(async () => {
+  let agreements = [], allUploads = [], dailyData = [], dashboard = {};
+
+  async function fetchData() {
+    [dashboard, agreements, allUploads, dailyData] = await Promise.all([
+      fetch('/admin/api/dashboard').then(r=>r.json()),
+      fetch('/admin/api/agreements').then(r=>r.json()),
+      fetch('/admin/api/user-uploads').then(r=>r.json()),
+      fetch('/admin/api/daily-stats').then(r=>r.json()),
+    ]);
+  }
+
+  function populateSessionFilter() {
+    const select = document.getElementById('sessionFilter');
+    [...new Set(allUploads.map(r=>r.session))].forEach(s => {
+      select.append(new Option(s, s));
+    });
+  }
+
+  function filterAndRenderUploads() {
+    let f = [...allUploads];
+    const sid = sessionFilter.value, d = dateFilter.value;
+    if (sid!='all') f = f.filter(r=>r.session==sid);
+    if (d) f = f.filter(r=>r.timestamp.startsWith(d));
+    uploadTable.innerHTML = f.map(r=>`
+      <tr class="border-t border-gray-800">
+        <td class="p-2">${r.session}</td>
+        <td class="p-2">${r.filename}</td>
+        <td class="p-2">${(r.score*100).toFixed(1)}</td>
+        <td class="p-2">${new Date(r.timestamp).toLocaleString()}</td>
+      </tr>`).join('');
+  }
+
+  function filterAndRenderAgreements(){
+    let f = agreements;
+    const d = dateAgreeFilter.value, t = searchInput.value.toLowerCase();
+    if (d) f = f.filter(r=>r.timestamp.startsWith(d));
+    if (t) f = f.filter(r=>r.ip.toLowerCase().includes(t)||r.doc_id.toLowerCase().includes(t));
+    agreementTable.innerHTML = f.map(r=>`
+      <tr class="border-t border-gray-800">
+        <td class="p-2">${r.timestamp}</td><td class="p-2">${r.ip}</td>
+        <td class="p-2">${r.doc_id}</td><td class="p-2">${r.session}</td>
+      </tr>`).join('');
+  }
+
+  function buildCharts(){
+    new Chart(statusChart.getContext('2d'), {
+      type:'bar',
+      data:{labels:['Approved','Failed'],datasets:[{data:[dashboard.approved,dashboard.failed],
+        backgroundColor:['#16a34a','#dc2626']}]},
+      options:{responsive:true}
+    });
+    new Chart(failRadar.getContext('2d'),{
+      type:'radar',
+      data:{labels:Object.keys(dashboard.failed_controls).slice(0,7),
+        datasets:[{data:Object.values(dashboard.failed_controls).slice(0,7),
+        backgroundColor:'rgba(220,38,38,0.3)',borderColor:'#dc2626'}]},
+      options:{responsive:true,scales:{r:{ticks:{color:'white'},grid:{color:'#555'},pointLabels:{color:'#fff'}}}}
+    });
+    new Chart(dailyChart.getContext('2d'),{
+      type:'line',
+      data:{labels:dailyData.map(r=>r.date),datasets:[{label:'Uploads',data:dailyData.map(r=>r.count),
+        borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,0.2)'}]},
+      options:{responsive:true}
+    });
+  }
+
+  document.getElementById('downloadPdf').onclick = async () => {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('landscape');
+    pdf.html(document.body, {
+      callback: () => pdf.save(`QISO_Dashboard_${new Date().toISOString()}.pdf`),
+      x:10, y:10, width:270
+    });
+  }
+
+  await fetchData();
+  document.getElementById('totalDocs').textContent = dashboard.total;
+  document.getElementById('approvedDocs').textContent = dashboard.approved;
+  document.getElementById('failedDocs').textContent = dashboard.failed;
+
+  populateSessionFilter();
+  filterAndRenderUploads();
+  filterAndRenderAgreements();
+  buildCharts();
+
+  ['change','input'].forEach(evt => {
+    document.getElementById('sessionFilter').addEventListener(evt, filterAndRenderUploads);
+    document.getElementById('dateFilter').addEventListener(evt, filterAndRenderUploads);
+    document.getElementById('dateAgreeFilter').addEventListener(evt, filterAndRenderAgreements);
+    document.getElementById('searchInput').addEventListener(evt, filterAndRenderAgreements);
+  });
+})();
+</script>
+</body></html>

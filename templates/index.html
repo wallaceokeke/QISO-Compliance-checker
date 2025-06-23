@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QISO Sentinel | ISO 27001 Compliance Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5464/5464120.png" />
+  <style>
+    .fadeIn { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-900 text-white flex items-center justify-center min-h-screen px-4">
+
+  <div class="w-full max-w-2xl bg-gray-950 shadow-2xl rounded-3xl p-8 border-t-8 border-blue-500 fadeIn">
+    
+    <!-- Header -->
+    <div class="text-center">
+      <img src="https://cdn-icons-png.flaticon.com/512/2889/2889676.png" alt="Upload Icon" class="w-16 mx-auto mb-4 animate-bounce" />
+      <h1 class="text-3xl font-extrabold text-blue-400 mb-2">QISO Sentinel</h1>
+      <p class="text-sm text-gray-300 mb-6">Upload your ISO 27001 Gap Analysis document for real-time automated compliance check.</p>
+    </div>
+
+    <!-- Agreement Button -->
+    <div class="flex flex-col items-center gap-2 mb-4">
+      <button id="agreeBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium transition">
+        ✅ I Agree to QISO Compliance Policy
+      </button>
+      <p class="text-xs text-gray-400 text-center">
+        Your consent will be timestamped and logged for audit.
+      </p>
+    </div>
+
+    <!-- Alert -->
+    <div class="bg-yellow-100 text-yellow-900 text-sm rounded p-3 mb-5 border-l-4 border-yellow-500">
+      ⚠️ You must accept our 
+      <a href="/policy" target="_blank" class="underline text-blue-600">Data Use Policy</a> before uploading. 
+      Full policy is also available 
+      <a href="/policy.json" target="_blank" class="underline text-blue-700">here</a>. Need help? 
+      <a href="https://your-admin-site.com/bot" target="_blank" rel="noopener" class="underline text-green-600">Ask our assistant bot</a>.
+    </div>
+
+    <!-- Upload Form -->
+    <form id="uploadForm" class="flex flex-col items-center gap-4">
+      <label for="fileInput" id="uploadLabel" class="w-full border-2 border-dashed border-gray-500 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition">
+        <span class="text-white font-medium" id="fileLabelText">Click to browse or drag and drop your file</span>
+        <input type="file" id="fileInput" name="file" class="hidden" required />
+      </label>
+
+      <div class="flex items-center gap-2 text-sm text-gray-300">
+        <input type="checkbox" id="consentCheck" class="accent-blue-500" required />
+        <label for="consentCheck">I agree to QISO's AI Compliance Data Use Policy</label>
+      </div>
+
+      <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition disabled:opacity-40">
+        Upload & Analyze
+      </button>
+    </form>
+
+    <!-- Response Message -->
+    <div id="responseMsg" class="mt-6 text-center text-sm font-medium"></div>
+
+    <!-- Post-upload Hint -->
+    <div id="afterUploadHint" class="hidden mt-6 flex flex-col items-center text-sm text-gray-400">
+      <img src="https://cdn-icons-png.flaticon.com/512/271/271239.png" class="w-6 mb-2 animate-bounce" alt="Refresh Icon" />
+      <span>To analyze another file, refresh or upload a new document.</span>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-6 text-center text-xs text-gray-500">
+      Developed by <span class="text-blue-400 font-semibold">Wallace Brown</span> — LeadDevCorps | © 2025
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const consentCheck = document.getElementById('consentCheck');
+    const responseMsg = document.getElementById('responseMsg');
+    const fileLabelText = document.getElementById('fileLabelText');
+    const afterUploadHint = document.getElementById('afterUploadHint');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Upload Handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!consentCheck.checked) {
+        responseMsg.innerHTML = "<div class='text-red-500'>⚠️ Please agree to the data policy before continuing.</div>";
+        return;
+      }
+
+      const file = fileInput.files[0];
+      if (!file) {
+        responseMsg.innerHTML = "<span class='text-red-500'>⚠️ Please select a file first.</span>";
+        return;
+      }
+
+      responseMsg.innerHTML = "<span class='text-blue-300'>⏳ Uploading and analyzing file...</span>";
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          const percent = (data.score * 100).toFixed(1);
+          responseMsg.innerHTML = `
+            <div class="text-green-400">
+              ✅ <strong>Upload successful!</strong><br>
+              Passed: ${data.passed_controls.length} | Failed: ${data.failed_controls.length}<br>
+              Compliance Score: <span class="font-bold">${percent}%</span>
+            </div>`;
+          fileInput.disabled = true;
+          submitBtn.disabled = true;
+          fileLabelText.textContent = "✅ File uploaded.";
+          uploadLabel.classList.add('cursor-not-allowed', 'opacity-50');
+          afterUploadHint.classList.remove('hidden');
+        } else {
+          responseMsg.innerHTML = `<div class="text-red-500">❌ ${data.error || 'Unknown error occurred.'}</div>`;
+        }
+
+      } catch (err) {
+        responseMsg.innerHTML = `<div class="text-red-500">❌ Upload failed. Please try again later.</div>`;
+        console.error(err);
+      }
+    });
+
+    // Agree Button Logic
+    document.getElementById('agreeBtn').addEventListener('click', async () => {
+      const res = await fetch('/agree', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ doc_id: 'DOC-' + Date.now() })
+      });
+
+      const data = await res.json();
+      if (data.status === "accepted") {
+        alert("✅ Policy accepted. You may now upload.");
+        consentCheck.checked = true;
+        consentCheck.disabled = true;
+      } else {
+        alert("❌ Could not record agreement.");
+      }
+    });
+  </script>
+</body>
+</html>

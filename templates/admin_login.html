@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="QISO Sentinel | ISO 27001 Admin Login" />
+  <meta name="author" content="Wallace Brown - LeadDevCorps" />
+  <title>Admin Login | QISO Sentinel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5464/5464120.png" />
+</head>
+<body class="bg-gray-950 flex items-center justify-center min-h-screen text-white px-4">
+  <div class="bg-gray-900 p-10 rounded-xl shadow-xl w-full max-w-md">
+    <h2 class="text-2xl font-bold text-blue-400 mb-6 text-center">🔐 Admin Login</h2>
+    <form method="post" class="space-y-4">
+      <div>
+        <label class="block text-sm mb-1" for="username">Username</label>
+        <input type="text" id="username" name="username" class="w-full px-4 py-2 rounded bg-gray-800 border border-gray-600 text-white" required />
+      </div>
+      <div>
+        <label class="block text-sm mb-1" for="password">Password</label>
+        <input type="password" id="password" name="password" class="w-full px-4 py-2 rounded bg-gray-800 border border-gray-600 text-white" required />
+      </div>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded font-semibold">Login</button>
+    </form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="mt-4 text-red-400 text-sm">{{ messages[0] }}</div>
+      {% endif %}
+    {% endwith %}
+  </div>
+</body>
+</html>
